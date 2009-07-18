@@ -101,7 +101,7 @@ public class ReadTemp
             }
         }
         
-         
+        
         /* Sets an indigo variable through applescript*/ 
         static void setVariable(String id, String value)
         {
@@ -230,7 +230,17 @@ public class ReadTemp
                 }
             }
             
-            populateVariableNames();
+            boolean scan=false;
+            
+            if (args.length>1)
+            {
+                if (args[1].compareTo("--scan")==0) scan=true;
+            } 
+            else
+            {
+                populateVariableNames();
+            }
+            
             while(true)
             {
                 access.adapterDetected();
@@ -269,68 +279,80 @@ public class ReadTemp
                     
                     if (isTempContainer)
                     {
-                        
-                        double high  = 0.0;
-                        double low   = 0.0;
-                        byte[] state = tc.readDevice();
-                        
-                        boolean selectable = tc.hasSelectableTemperatureResolution();
                         String id=owc.getAddressAsString();
-                        
-                        if (selectable)
-                            try
+                        if (scan) 
                         {
-                            tc.setTemperatureResolution(0.0625, state);
-                        }
-                        catch (Exception e)
+                            System.out.println("= Temperature Sensor Found: "+id);
+                        } else 
                         {
-                            System.out.println("= Could not set resolution for "+id+": "
-                                               + e.toString());
-                        }
-                        
-                        try
-                        {
-                            tc.writeDevice(state);
-                        }
-                        catch (Exception e)
-                        {
-                            System.out.println(
-                                               "= Could not write device state, all changes lost.");
-                            System.out.println("= Exception occurred for "+id+": " + e.toString());
-                        }
-                        
-                        boolean conversion=false;
-                        try
-                        {
-                            tc.doTemperatureConvert(state);
-                            conversion=true;
-                        }
-                        catch (Exception e)
-                        {
-                            System.out.println(
-                                               "= Could not complete temperature conversion...");
-                            System.out.println("= Exception occurred for "+id+": " + e.toString());
-                        }
-                        
-                        if (conversion) 
-                        {
-                            state = tc.readDevice();
                             
-                            double temp = tc.getTemperature(state);
-                            if (temp<84) {
-                                double temp_f = (9.0/5.0)*temp+32;
-                                setVariable(id,Double.toString(temp_f));
+                            double high  = 0.0;
+                            double low   = 0.0;
+                            byte[] state = tc.readDevice();
+                            
+                            boolean selectable = tc.hasSelectableTemperatureResolution();
+                            
+                            
+                            if (selectable)
+                                try
+                            {
+                                tc.setTemperatureResolution(0.0625, state);
                             }
-                            System.out.println("= Reported temperature from "+
-                                               (String)variableNames.get(id)+"("+
-                                               id + "):" + temp);
+                            catch (Exception e)
+                            {
+                                System.out.println("= Could not set resolution for "+id+": "
+                                                   + e.toString());
+                            }
+                            
+                            try
+                            {
+                                tc.writeDevice(state);
+                            }
+                            catch (Exception e)
+                            {
+                                System.out.println(
+                                                   "= Could not write device state, all changes lost.");
+                                System.out.println("= Exception occurred for "+id+": " + e.toString());
+                            }
+                            
+                            boolean conversion=false;
+                            try
+                            {
+                                tc.doTemperatureConvert(state);
+                                conversion=true;
+                            }
+                            catch (Exception e)
+                            {
+                                System.out.println(
+                                                   "= Could not complete temperature conversion...");
+                                System.out.println("= Exception occurred for "+id+": " + e.toString());
+                            }
+                            
+                            if (conversion) 
+                            {
+                                state = tc.readDevice();
+                                
+                                double temp = tc.getTemperature(state);
+                                if (temp<84) {
+                                    double temp_f = (9.0/5.0)*temp+32;
+                                    setVariable(id,Double.toString(temp_f));
+                                }
+                                System.out.println("= Reported temperature from "+
+                                                   (String)variableNames.get(id)+"("+
+                                                   id + "):" + temp);
+                            }
                         }
                     }
                     next = access.findNextDevice();
                 }
-                try {
-                    Thread.sleep(60*5*1000);
-                } catch (Exception e) {}
+                if (!scan) {
+                    try {
+                        Thread.sleep(60*5*1000);
+                    } catch (Exception e) {} 
+                } else {
+                    System.exit(0);
+                }
             }
         }
     }
+

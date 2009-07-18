@@ -1,0 +1,37 @@
+Provides OneWire temperature updates to Perceptive Automation's Indigo.
+
+0)  Install the rxtx binaries.  Go to http://rxtx.qbang.org/wiki/index.php/Download 
+and download http://rxtx.qbang.org/pub/rxtx/rxtx-2.2pre2-bins.zip.  Uncompress the
+zip file and put rxtx-2.2pre2-bins/RXTXcomm.jar and rxtx-2.2pre2-bins/mac-10.5 in
+/Library/Java/Extensions/.
+
+1)  Build the package using the build script, or download from 
+http://github.com/jamusj/OneWire/downloads:
+
+$ ./build.sh
+$ ./package.sh
+
+3)  Scan the temperature devices:
+
+$ ./run.sh DS9097U_/dev/cu.usbserial-A900a3XN --scan
+Adapter Name: DS9097U
+Port Name: /dev/cu.usbserial-A900a3XN
+= Temperature Sensor Found: 84000002024B8828
+= Temperature Sensor Found: 52000001D1287128
+= Temperature Sensor Found: AA000001D1744928
+= Temperature Sensor Found: 45000001D158CD28
+
+4) Create the variables for the temperature sensors in Indigo; one for each
+device found.
+
+5) Create a variable called "ow_config" that will contain the mapping from
+OneWire address to variable name.  It should have the following format:
+
+{ "84000002024B8828" : "Room_4", "52000001D1287128" : "Room_3", "AA000001D1744928" 
+: "Room_2", "45000001D158CD28" : "Room_1" }
+
+6) Start the process:
+
+$ ./run.sh DS9097U_/dev/cu.usbserial-A900a3XN
+
+You should now see the variables get updated in Indigo.
